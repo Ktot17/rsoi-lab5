@@ -1,9 +1,11 @@
 ﻿using LibraryBL.OutputPorts;
 using LibraryServer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryServer.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/v1/libraries/")]
 public class LibraryController(ILibraryManager libraryManager) : ControllerBase
