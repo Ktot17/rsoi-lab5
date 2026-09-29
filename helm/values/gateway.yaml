@@ -1,0 +1,38 @@
+image:
+  repository: cr.yandex/crp8pmpt39t70k7ra3uf/gateway
+  tag: "latest"
+service:
+  port: 8080
+env:
+  - name: ServiceUrls__LibraryServiceUrl
+    value: "http://library:8080"
+  - name: ServiceUrls__RatingServiceUrl
+    value: "http://rating:8080"
+  - name: ServiceUrls__ReservationServiceUrl
+    value: "http://reservation:8080"
+  - name: Auth0__Domain
+    valueFrom:
+      secretKeyRef:
+        name: auth0-credentials
+        key: domain
+  - name: Auth0__Audience
+    valueFrom:
+      secretKeyRef:
+        name: auth0-credentials
+        key: audience
+  - name: Auth0__ClientId
+    valueFrom:
+      secretKeyRef:
+        name: auth0-credentials
+        key: client-id
+  - name: Auth0__ClientSecret
+    valueFrom:
+      secretKeyRef:
+        name: auth0-credentials
+        key: client-secret
+ingress:
+  enabled: true
+  className: "nginx"
+  host: ""
+  path: "/"
+  pathType: "Prefix"
