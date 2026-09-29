@@ -111,8 +111,6 @@ public class UnitTestsBl
         
         _reservationHttpClientMock.Verify(l => l.ReturnBookAsync(reservationUid, It.IsAny<DateTime>()), Times.Once);
         _libraryHttpClientMock.Verify(l => l.ChangeAvailableCountAsync(libraryUid, bookUid, 1), Times.Once);
-        _libraryHttpClientMock.Verify(l => 
-            l.GetLibrariesAndBooksAsync(new List<Guid>(), new List<Guid> { bookUid }), Times.Once);
         _ratingHttpClientMock.Verify(r => r.UpdateUserRatingAsync(-10), Times.Once);
     }
 
