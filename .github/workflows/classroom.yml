@@ -61,21 +61,28 @@ jobs:
             --force
           kubectl cluster-info
 
+      - name: Set TAG
+        run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Build images
         env:
           BUILDX_NO_DEFAULT_ATTESTATIONS: "1"
         timeout-minutes: 10
-        run: docker compose build --push
+        run: docker compose build
+
+      - name: Push images
+        timeout-minutes: 5
+        run: docker compose push
 
       - name: Deploy with Helm
         run: |
-          helm upgrade --install rating     ./helm/app -f ./helm/values/rating.yaml      --wait --timeout 3m
-          helm upgrade --install library    ./helm/app -f ./helm/values/library.yaml     --wait --timeout 3m
-          helm upgrade --install reservation ./helm/app -f ./helm/values/reservation.yaml --wait --timeout 3m
-          helm upgrade --install gateway    ./helm/app -f ./helm/values/gateway.yaml     --wait --timeout 3m
+          helm upgrade --install rating     ./helm/app -f ./helm/values/rating.yaml --set image.tag=${TAG}      --wait --timeout 3m
+          helm upgrade --install library    ./helm/app -f ./helm/values/library.yaml --set image.tag=${TAG}     --wait --timeout 3m
+          helm upgrade --install reservation ./helm/app -f ./helm/values/reservation.yaml --set image.tag=${TAG} --wait --timeout 3m
+          helm upgrade --install gateway    ./helm/app -f ./helm/values/gateway.yaml --set image.tag=${TAG}     --wait --timeout 3m
 
       - name: Wait before services are ready
-        run: kubectl wait -l app.kubernetes.io/instance=gateway pod --for=condition=Ready --timeout=3m
+        run: kubectl rollout status deployment gateway -n default --timeout=3m
 
       - name: Run API Tests
         uses: matt-ball/newman-action@master
