@@ -4,32 +4,17 @@
   "values": [
     {
       "key": "serviceUrl",
-      "value": "",
-      "enabled": true
-    },
-    {
-      "key": "identityProviderUrl",
-      "value": "",
+      "value": "http://81.26.177.110",
       "enabled": true
     },
     {
       "key": "username",
-      "value": "",
+      "value": "test",
       "enabled": true
     },
     {
       "key": "password",
-      "value": "",
-      "enabled": true
-    },
-    {
-      "key": "clientId",
-      "value": "",
-      "enabled": true
-    },
-    {
-      "key": "clientSecret",
-      "value": "",
+      "value": "gDy-NDB-phC-rqi",
       "enabled": true
     }
   ],
