@@ -8,6 +8,11 @@
       "enabled": true
     },
     {
+      "key": "identityProviderUrl",
+      "value": "https://dev-4nod4huxmuci2y88.us.auth0.com",
+      "enabled": true
+    },
+    {
       "key": "username",
       "value": "test",
       "enabled": true
@@ -15,6 +20,21 @@
     {
       "key": "password",
       "value": "gDy-NDB-phC-rqi",
+      "enabled": true
+    },
+    {
+      "key": "clientId",
+      "value": "acBXEOTUgSGsqVTzlUUHj0vLDpeGeO5l",
+      "enabled": true
+    },
+    {
+      "key": "clientSecret",
+      "value": "jRUFBTEfpuju9efzmY1G6gg06bcaFKDfYAKJ5iMARPD0A05hTh5Pvt-FZ6xPB84g",
+      "enabled": true
+    },
+    {
+      "key": "audience",
+      "value": "https://rsoi-lab5/",
       "enabled": true
     }
   ],
