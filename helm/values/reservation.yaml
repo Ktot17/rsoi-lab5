@@ -1,0 +1,20 @@
+image:
+  repository: cr.yandex/crp8pmpt39t70k7ra3uf/reservation
+service:
+  port: 8080
+env:
+  - name: ConnectionStrings__Postgres
+    valueFrom:
+      secretKeyRef:
+        name: db-connection-strings
+        key: reservation-connection
+  - name: Auth0__Domain
+    valueFrom:
+      secretKeyRef:
+        name: auth0-credentials
+        key: domain
+  - name: Auth0__Audience
+    valueFrom:
+      secretKeyRef:
+        name: auth0-credentials
+        key: audience

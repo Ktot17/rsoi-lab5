@@ -1,7 +1,11 @@
 name: GitHub Classroom Workflow
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 jobs:
   build:
     name: Autograding
@@ -13,13 +17,78 @@ jobs:
 
       - uses: docker/setup-buildx-action@v2
 
-      # TODO build, publish to docker hub, deploy to k8s
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        working-directory: src
+        run: dotnet restore
+
+      - name: Build
+        working-directory: src
+        run: dotnet build --no-restore -c Release
+
+      - name: Run unit tests
+        working-directory: src
+        run: dotnet test --no-build -c Release --verbosity normal
+
+      - name: Install YC CLI
+        run: |
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+          echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH
+
+      - name: Authenticate to Yandex Cloud
+        run: |
+          echo '${{ secrets.YC_SA_KEY_JSON }}' > key.json
+          yc config profile create sa-profile
+          yc config set service-account-key key.json --profile sa-profile
+          yc config set cloud-id ${{ secrets.YC_CLOUD_ID }} --profile sa-profile
+          yc config set folder-id ${{ secrets.YC_FOLDER_ID }} --profile sa-profile
+          yc config profile activate sa-profile
+          rm -f key.json
+
+      - name: Login to Yandex Container Registry
+        run: |
+          yc iam create-token | docker login --username iam --password-stdin cr.yandex
+
+      - name: Setup kubectl
+        run: |
+          yc managed-kubernetes cluster get-credentials \
+            ${{ secrets.KUBE_CLUSTER_ID }} \
+            --external \
+            --force
+          kubectl cluster-info
+
+      - name: Set TAG
+        run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Build images
+        env:
+          BUILDX_NO_DEFAULT_ATTESTATIONS: "1"
+        timeout-minutes: 10
+        run: docker compose build
+
+      - name: Push images
+        timeout-minutes: 5
+        run: docker compose push
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install rating     ./helm/app -f ./helm/values/rating.yaml --set image.tag=${TAG}      --wait --timeout 3m
+          helm upgrade --install library    ./helm/app -f ./helm/values/library.yaml --set image.tag=${TAG}     --wait --timeout 3m
+          helm upgrade --install reservation ./helm/app -f ./helm/values/reservation.yaml --set image.tag=${TAG} --wait --timeout 3m
+          helm upgrade --install gateway    ./helm/app -f ./helm/values/gateway.yaml --set image.tag=${TAG}     --wait --timeout 3m
+
+      - name: Wait before services are ready
+        run: kubectl rollout status deployment gateway -n default --timeout=3m
 
       - name: Run API Tests
         uses: matt-ball/newman-action@master
         with:
-          collection: <variant>/postman/collection.json
-          environment: <variant>/postman/environment.json
+          collection: v4/postman/collection.json
+          environment: v4/postman/environment.json
           delayRequest: 100
           reporters: '[ "cli" ]'
 
